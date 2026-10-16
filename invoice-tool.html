@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mobile Loan Invoice Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f3f5fa;--card:#fff;--tx:#0f1b3d;--mut:#64708f;--bd:#d5dbe8;--pr:#1565c0;--in:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141f;--card:#1a2030;--tx:#e8ecf7;--mut:#93a0c0;--bd:#2d3650;--pr:#5aa2ff;--in:#121827}}
+:root[data-theme="dark"]{--bg:#10141f;--card:#1a2030;--tx:#e8ecf7;--mut:#93a0c0;--bd:#2d3650;--pr:#5aa2ff;--in:#121827}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,Arial,sans-serif}
+.wrap{max-width:1000px;margin:auto;padding:16px}
+h1{font-size:22px;margin:8px 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+label{font-size:12px;font-weight:600;color:var(--mut);display:block;margin-bottom:4px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--in);color:var(--tx);font:inherit;font-size:15px}
+.full{grid-column:1/-1}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--pr);color:#fff}
+button.sec{background:transparent;color:var(--pr);border:1.5px solid var(--pr)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+#drop{border:2px dashed var(--bd);border-radius:12px;padding:22px;text-align:center;color:var(--mut);margin-top:12px;outline:none}
+#drop:focus,#drop.on{border-color:var(--pr)}
+#drop img{max-width:100%;max-height:220px;border-radius:8px}
+#msg{margin-top:8px;font-size:13px;color:var(--mut)}
+#pv{width:100%;height:auto;display:block;border-radius:8px;box-shadow:0 4px 24px #0003;background:#fff}
+.hide{display:none}
+input::placeholder{opacity:.5}
+.caution{margin:192px 0 24px;padding:14px 16px;border:1px solid var(--bd);border-radius:12px;text-align:center;font-size:13px;line-height:1.6;color:var(--mut)}
+.caution b{color:var(--tx)}
+.glow{display:block;margin:18px auto 4px;padding:14px 30px;font-size:16px;letter-spacing:.5px;background:linear-gradient(135deg,#1e88e5,#7c4dff);box-shadow:0 0 12px #1e88e5,0 0 28px #7c4dffaa;animation:gl 1.8s ease-in-out infinite alternate}
+@keyframes gl{from{box-shadow:0 0 8px #1e88e5,0 0 18px #7c4dff88}to{box-shadow:0 0 18px #42a5f5,0 0 42px #7c4dff}}
+#brPanel{margin-top:14px;border:1.5px solid var(--pr);border-radius:14px;padding:16px;background:var(--bg)}
+#brPanel .grid>div{grid-column:1/-1}
+</style></head><body><div class="wrap">
+<h1>📱 Mobile Loan Invoice Generator</h1>
+
+<div class="card">
+ <div class="row" style="justify-content:space-between;align-items:center">
+  <b>Details Extractor</b>
+  <button class="sec" id="exBtn">📋 Details Extractor</button>
+ </div>
+ <div id="exBox" class="hide">
+  <div id="drop" tabindex="0">Yaha click karke <b>Ctrl+V</b> se image paste karo (ya drag & drop / <a href="#" id="pick">file choose karo</a>)</div>
+  <input type="file" id="file" accept="image/*" class="hide">
+  <div id="msg"></div>
+ </div>
+</div>
+
+<div class="card"><div class="grid">
+ <div><label>Customer Name</label><input id="name" placeholder="Vijay Kumar"></div>
+ <div><label>Mobile Number</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="1234567890"></div>
+ <div class="full"><label>1. Axio Account Number</label><input id="acc" placeholder="MIR26E001452632" style="text-transform:uppercase"></div>
+ <div><label>Brand</label><input id="brand" placeholder="Xiaomi"></div>
+ <div><label>IMEI No.</label><input id="imei" inputmode="numeric" maxlength="15" placeholder="867738080326106"></div>
+ <div><label>2. Phone Price (₹)</label><input id="price" inputmode="decimal" placeholder="10500"></div>
+ <div><label>3. Down Payment (₹)</label><input id="down" inputmode="decimal" placeholder="10500"></div>
+ <div><label>4. Monthly EMI (₹)</label><input id="emi" inputmode="decimal" placeholder="1268.84"></div>
+ <div><label>5. Loan Tenure</label><select id="ten"><option value="6">6 Months</option><option value="8" selected>8 Months</option><option value="10">10 Months</option></select></div>
+ <div><label>6. Loan Start Date (DD/MM/YYYY)</label><input id="start" inputmode="numeric" maxlength="10" placeholder="02/12/2026"></div>
+ <div><label>7. Loan End Date (auto)</label><input id="end" readonly placeholder="Auto calculate"></div>
+</div></div>
+
+<div class="card">
+ <div class="row" style="margin-bottom:14px">
+  <button id="dJpg">⬇ Download JPEG (HD)</button>
+  <button id="dPdf">⬇ Download PDF (HD)</button>
+ </div>
+ <canvas id="pv"></canvas>
+ <div id="dmsg" style="font-size:13px;color:var(--mut);margin-top:8px"></div>
+ <button class="glow" id="brBtn">✨ Change Branding</button>
+ <div id="brPanel" class="hide">
+  <b>Footer Branding Edit Karo</b>
+  <div class="grid" style="margin-top:12px">
+   <div><label>Shop Name</label><input id="brName" maxlength=40></div>
+   <div><label>Phone Number</label><input id="brPhone" maxlength=25></div>
+   <div><label>Bottom Text</label><input id="brText" maxlength=50></div>
+  </div>
+  <div class="row" style="margin-top:14px"><button id="brSave">💾 Save</button><button class="sec" id="brReset">Reset to Default</button></div>
+  <div id="brMsg" style="font-size:13px;color:var(--mut);margin-top:8px"></div>
+ </div>
+</div>
+<div class="caution"><b>⚠️ CAUTION:</b> Is website par aapki customer ki koi bhi information save nahi hoti — sab kuch sirf aapke browser mein bill banane ke liye use hota hai. Ye website 100% trusted aur safe hai. Sirf footer branding aapke apne device mein save rehti hai.</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const W=1054,H=1492,S=3,NAVY='#0a1f5c',BLUE='#1e88e5',LINE='#233a6b',HEAD='#eef2f8';
+const cv=$('pv'),ctx=cv.getContext('2d');
+const F='Inter, Arial, sans-serif';
+const DEF={name:'SHIVAM MOBILE SHOP',phone:'+91 7387911626',text:'FOR ANY PROBLEM CONTACT'};
+let BR={...DEF};
+try{const s=JSON.parse(localStorage.getItem('brandingV1')||'null');if(s&&s.name&&s.phone&&s.text)BR=s}catch(e){}
+function fitT(txt,y,wt,size,color){let s=size;ctx.font=wt+' '+s+'px '+F;while(ctx.measureText(txt).width>900&&s>10){s--;ctx.font=wt+' '+s+'px '+F}T(txt,W/2,y,wt+' '+s+'px '+F,color,'center')}
+
+function addMonths(str,n){
+  const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(str);if(!m)return'';
+  const d=+m[1],mo=+m[2]-1,y=+m[3];
+  const test=new Date(y,mo,d);if(test.getMonth()!==mo||test.getDate()!==d)return'';
+  const t=mo+n,ny=y+Math.floor(t/12),nm=t%12;
+  const last=new Date(ny,nm+1,0).getDate(),nd=Math.min(d,last);
+  return String(nd).padStart(2,'0')+'/'+String(nm+1).padStart(2,'0')+'/'+ny;
+}
+const money=v=>{const n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?'':'₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})};
+function val(){return{name:$('name').value.trim(),mobile:$('mobile').value.trim(),acc:$('acc').value.trim().toUpperCase(),brand:$('brand').value.trim(),imei:$('imei').value.trim(),
+ price:money($('price').value),down:money($('down').value),emi:money($('emi').value),ten:$('ten').value+' Months',start:$('start').value,end:$('end').value}}
+
+function T(txt,x,y,font,color,align){ctx.font=font;ctx.fillStyle=color;ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillText(txt,x,y)}
+function rect(x,y,w,h,fill){ctx.fillStyle=fill;ctx.fillRect(x,y,w,h)}
+function hline(y,color,w){ctx.strokeStyle=color;ctx.lineWidth=w||1;ctx.beginPath();ctx.moveTo(48,y);ctx.lineTo(1008,y);ctx.stroke()}
+function table(top,cols,hh,rh,rows){
+  const n=rows.length,bot=top+hh+rh*n;
+  rect(48,top,960,hh,HEAD);
+  ctx.strokeStyle=LINE;ctx.lineWidth=1.3;ctx.strokeRect(48,top,960,bot-top);
+  ctx.beginPath();for(let i=1;i<cols.length-1;i++){ctx.moveTo(cols[i],top);ctx.lineTo(cols[i],bot)}
+  for(let r=0;r<=n;r++){const y=top+hh+rh*(r-1)+(r?0:0);if(r===0)continue}
+  ctx.moveTo(48,top+hh);ctx.lineTo(1008,top+hh);
+  for(let r=1;r<n;r++){ctx.moveTo(48,top+hh+rh*r);ctx.lineTo(1008,top+hh+rh*r)}
+  ctx.stroke();
+  const hy=top+hh/2;
+  T('Sl. No.',(cols[0]+cols[1])/2,hy,'700 23px '+F,NAVY,'center');
+  T('Description',(cols[1]+cols[2])/2,hy,'700 23px '+F,NAVY,'center');
+  T('Value',(cols[2]+cols[3])/2,hy,'700 23px '+F,NAVY,'center');
+  rows.forEach((r,i)=>{const y=top+hh+rh*i+rh/2;
+   T(r[0],(cols[0]+cols[1])/2,y,'400 23px '+F,NAVY,'center');
+   T(r[1],cols[1]+15,y,'400 23px '+F,NAVY);
+   T(r[2],cols[2]+17,y,'400 23px '+F,NAVY)});
+}
+function draw(){
+  const v=val();cv.width=W*S;cv.height=H*S;ctx.setTransform(S,0,0,S,0,0);
+  rect(0,0,W,H,'#fff');
+  T('INVOICE',W/2,85,'800 100px '+F,NAVY,'center');
+  T('Mobile Phone Loan Purchase Bill',W/2,158,'700 41px '+F,NAVY,'center');
+  hline(205,BLUE,2);
+  T('The axio account number '+(v.acc||'—')+' is ready to be disbursed by axio.',W/2,250,'400 24px '+F,NAVY,'center');
+  T('CUSTOMER DETAILS',48,317,'700 29px '+F,NAVY);
+  table(350,[48,209,655,1008],52,53,[['1.','Name',v.name||'—'],['2.','Mobile Number',v.mobile||'—'],['3.','Customer Account Number',v.acc||'—']]);
+  T('LOAN DETAILS',48,613,'700 29px '+F,NAVY);
+  table(646,[48,209,655,1008],53,55,[['1.','Brand',v.brand||'—'],['2.','IMEI No.',v.imei||'—']]);
+  T('PURCHASE & PAYMENT DETAILS',48,868,'700 29px '+F,NAVY);
+  const P=[['Phone Price:',v.price],['Down Payment:',v.down],['Monthly EMI:',v.emi],['Loan Tenure:',v.ten],['Loan Start Date:',v.start],['Loan End Date:',v.end]];
+  const top=904,rh=59;
+  ctx.strokeStyle=LINE;ctx.lineWidth=1.3;ctx.strokeRect(48,top,960,rh*6);
+  ctx.beginPath();ctx.moveTo(477,top);ctx.lineTo(477,top+rh*6);for(let r=1;r<6;r++){ctx.moveTo(48,top+rh*r);ctx.lineTo(1008,top+rh*r)}ctx.stroke();
+  P.forEach((p,i)=>{const y=top+rh*i+rh/2;T(p[0],72,y,'700 23px '+F,NAVY);T(p[1]||'—',503,y,'400 23px '+F,NAVY)});
+  // FIXED FOOTER BRANDING (not editable)
+  hline(1304,BLUE,2);
+  fitT(BR.name,1347,'800',37,NAVY);
+  fitT(BR.phone,1397,'500',30,NAVY);
+  fitT(BR.text,1437,'400',22,NAVY);
+}
+function upd(){$('end').value=addMonths($('start').value,+$('ten').value);draw()}
+['name','mobile','acc','brand','imei','price','down','emi','ten','start'].forEach(i=>$(i).addEventListener('input',upd));
+$('mobile').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,''));
+$('imei').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,''));
+$('start').addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'').slice(0,8),o=d.slice(0,2);if(d.length>2)o+='/'+d.slice(2,4);if(d.length>4)o+='/'+d.slice(4);e.target.value=o;upd()});
+
+// ---- Downloads ----
+function toBlob(type,q){return new Promise(r=>cv.toBlob(r,type,q))}
+async function save(blob,name){
+  let dl=null;try{dl=window.claude&&await claude.use('downloads')}catch(e){}
+  if(dl){try{await dl.save({filename:name,data:blob});return}catch(e){if(e&&e.code==='declined')return}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+const fname=()=>'Invoice_'+(($('name').value.trim()||'Customer').replace(/[^\w]+/g,'_'))+'_'+($('acc').value.trim()||'bill');
+$('dJpg').onclick=async()=>{await document.fonts.ready;draw();await save(await toBlob('image/jpeg',0.97),fname()+'.jpg')};
+$('dPdf').onclick=async()=>{await document.fonts.ready;draw();
+  const {jsPDF}=window.jspdf;const p=new jsPDF({unit:'mm',format:'a4',compress:true});
+  p.addImage(cv.toDataURL('image/jpeg',0.97),'JPEG',0,0,210,297,undefined,'FAST');
+  await save(p.output('blob'),fname()+'.pdf')};
+
+// ---- Extractor ----
+const msg=$('msg'),drop=$('drop');
+$('exBtn').onclick=()=>{$('exBox').classList.toggle('hide');drop.focus()};
+$('pick').onclick=e=>{e.preventDefault();$('file').click()};
+$('file').onchange=e=>e.target.files[0]&&extract(e.target.files[0]);
+drop.addEventListener('paste',e=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){e.preventDefault();extract(it.getAsFile())}});
+document.addEventListener('paste',e=>{if(!$('exBox').classList.contains('hide')&&e.target.tagName!=='INPUT'){const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it)extract(it.getAsFile())}});
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('on')});
+drop.addEventListener('dragleave',()=>drop.classList.remove('on'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('on');const f=e.dataTransfer.files[0];f&&f.type.startsWith('image/')&&extract(f)});
+async function extract(blob){
+  const url=URL.createObjectURL(blob);drop.innerHTML='<img src="'+url+'">';
+  msg.textContent='⏳ Details extract ho rahi hain...';
+  try{
+    const sample=window.claude&&await claude.use('sample');
+    if(!sample){msg.textContent='❌ Extractor yaha available nahi hai. Details manually bhar do.';return}
+    const lim=await sample.limits();
+    if(!lim.images){msg.textContent='❌ Image support available nahi hai.';return}
+    const r=await sample('This image is a table of customer and loan details. Extract: customer name, mobile number (10 digits), customer account number (like MIR26E001452642), brand, IMEI number (15 digits). Copy values exactly, character by character. Reply with ONLY a JSON object, no other text: {"name":"","mobile":"","account":"","brand":"","imei":""}. Use empty string if a value is missing.',{images:[blob],cache:false,modelTier:'default'});
+    const j=JSON.parse(/\{[\s\S]*\}/.exec(r.text)[0]);
+    if(j.name)$('name').value=j.name;
+    if(j.mobile)$('mobile').value=String(j.mobile).replace(/\D/g,'').slice(-10);
+    if(j.account)$('acc').value=String(j.account).toUpperCase().replace(/\s/g,'');
+    if(j.brand)$('brand').value=j.brand;
+    if(j.imei)$('imei').value=String(j.imei).replace(/\D/g,'').slice(0,15);
+    upd();msg.textContent='✅ Details fill ho gayi — ek baar check kar lena.';
+  }catch(e){msg.textContent='❌ Extract nahi ho paya'+(e&&e.code==='not_granted'?' (permission allow karo)':'')+'. Dobara try karo.'}
+}
+// ---- Branding editor ----
+function fillBr(){$('brName').value=BR.name;$('brPhone').value=BR.phone;$('brText').value=BR.text}
+$('brBtn').onclick=()=>{fillBr();$('brPanel').classList.toggle('hide')};
+$('brSave').onclick=()=>{
+  const n=$('brName').value.trim(),p=$('brPhone').value.trim(),t=$('brText').value.trim();
+  if(!n||!p||!t){$('brMsg').textContent='❌ Teeno box bharna zaroori hai.';return}
+  BR={name:n,phone:p,text:t};let ok=true;
+  try{localStorage.setItem('brandingV1',JSON.stringify(BR))}catch(e){ok=false}
+  draw();$('brMsg').textContent=ok?'✅ Saved! Ab hamesha yahi branding dikhegi.':'⚠️ Preview update ho gaya, par is browser mein save nahi ho paya.'};
+$('brReset').onclick=()=>{BR={...DEF};try{localStorage.removeItem('brandingV1')}catch(e){}fillBr();draw();$('brMsg').textContent='Default branding wapas aa gayi.'};
+upd();document.fonts.ready.then(draw);
+</script></body></html>

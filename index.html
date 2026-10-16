@@ -57,7 +57,7 @@ input::placeholder{opacity:.5}
  <div><label>Customer Name</label><input id="name" placeholder="Vijay Kumar"></div>
  <div><label>Mobile Number</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="1234567890"></div>
  <div class="full"><label>1. Axio Account Number</label><input id="acc" placeholder="MIR26E001452632" style="text-transform:uppercase"></div>
- <div><label>Brand</label><input id="brand" placeholder="Xiaomi"></div>
+ <div><label>Brand + Model</label><input id="brand" placeholder="Redmi 17"></div>
  <div><label>IMEI No.</label><input id="imei" inputmode="numeric" maxlength="15" placeholder="867738080326106"></div>
  <div><label>2. Phone Price (₹)</label><input id="price" inputmode="decimal" placeholder="10500"></div>
  <div><label>3. Down Payment (₹)</label><input id="down" inputmode="decimal" placeholder="10500"></div>
@@ -144,7 +144,7 @@ function draw(){
   T('CUSTOMER DETAILS',48,317,'700 29px '+F,NAVY);
   table(350,[48,209,655,1008],52,53,[['1.','Name',v.name||'—'],['2.','Mobile Number',v.mobile||'—'],['3.','Customer Account Number',v.acc||'—']]);
   T('LOAN DETAILS',48,613,'700 29px '+F,NAVY);
-  table(646,[48,209,655,1008],53,55,[['1.','Brand',v.brand||'—'],['2.','IMEI No.',v.imei||'—']]);
+  table(646,[48,209,655,1008],53,55,[['1.','Brand + Model',v.brand||'—'],['2.','IMEI No.',v.imei||'—']]);
   T('PURCHASE & PAYMENT DETAILS',48,868,'700 29px '+F,NAVY);
   const P=[['Phone Price:',v.price],['Down Payment:',v.down],['Monthly EMI:',v.emi],['Loan Tenure:',v.ten],['Loan Start Date:',v.start],['Loan End Date:',v.end]];
   const top=904,rh=59;

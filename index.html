@@ -38,7 +38,15 @@ input::placeholder{opacity:.5}
 @keyframes gl{from{box-shadow:0 6px 14px #0277bd55,0 0 12px #4fc3f7}to{box-shadow:0 12px 30px #0277bd88,0 0 38px #4fc3f7,0 0 6px #ffffff88}}
 #brPanel{margin-top:14px;border:1.5px solid var(--pr);border-radius:14px;padding:16px;background:var(--bg)}
 #brPanel .grid>div{grid-column:1/-1}
-</style></head><body><div class="wrap">
+
+.live{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;z-index:50;padding:1.5px;background:linear-gradient(135deg,#22c55e,#16a34a66);clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,9px 100%,0 calc(100% - 9px),0 9px)}
+.live .in{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--card);color:var(--tx);font-size:12px;font-weight:700;letter-spacing:.3px;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)}
+.live .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px 2px #22c55e99;animation:lg 1.4s ease-in-out infinite;flex:none}
+.live #liveN{color:#16a34a;font-weight:800;min-width:8px;text-align:right}
+@keyframes lg{0%,100%{box-shadow:0 0 4px 1px #22c55e88;opacity:.85}50%{box-shadow:0 0 12px 5px #22c55ecc;opacity:1}}
+@media(max-width:640px){h1{padding-right:120px}}
+</style></head><body><div class="live" title="Abhi website pe active users"><div class="in"><span class="dot"></span><span>User Live</span><span id="liveN">1</span></div></div>
+<div class="wrap">
 <h1>📱 Mobile Loan Invoice Generator</h1>
 
 <div class="card">
@@ -250,4 +258,32 @@ $('brSave').onclick=()=>{
   draw();$('brMsg').textContent=ok?'✅ Saved! Ab hamesha yahi branding dikhegi.':'⚠️ Preview update ho gaya, par is browser mein save nahi ho paya.'};
 $('brReset').onclick=()=>{BR={...DEF};try{localStorage.removeItem('brandingV1')}catch(e){}fillBr();draw();$('brMsg').textContent='Default branding wapas aa gayi.'};
 upd();document.fonts.ready.then(draw);
-</script></body></html>
+</script>
+<script>
+// ===== LIVE USERS (Firebase Realtime Database) =====
+// Setup: console.firebase.google.com -> project -> Realtime Database -> Create -> Web app config yaha paste karo
+const FB_CONFIG={
+  apiKey:"AIzaSyCmAQpMZEmQVVH0mbQWmYQXBf9g7uGAI1M",
+  authDomain:"testmode-bef49.firebaseapp.com",
+  databaseURL:"https://testmode-bef49-default-rtdb.firebaseio.com",
+  projectId:"testmode-bef49",
+  storageBucket:"testmode-bef49.firebasestorage.app",
+  messagingSenderId:"125065226107",
+  appId:"1:125065226107:web:59fe618967a33fd87dffde"
+};
+(function(){
+  const el=document.getElementById('liveN');
+  if(!FB_CONFIG.databaseURL||!FB_CONFIG.apiKey){console.info('Live users: FB_CONFIG khali hai, abhi sirf aap (1) dikh rahe ho.');return}
+  function load(u){return new Promise((ok,no)=>{const x=document.createElement('script');x.src=u;x.onload=ok;x.onerror=no;document.head.appendChild(x)})}
+  const B='https://www.gstatic.com/firebasejs/10.12.2/';
+  load(B+'firebase-app-compat.js').then(()=>load(B+'firebase-database-compat.js')).then(()=>{
+    firebase.initializeApp(FB_CONFIG);
+    const db=firebase.database(),list=db.ref('presence');
+    db.ref('.info/connected').on('value',s=>{
+      if(s.val()===true){const me=list.push();me.onDisconnect().remove();me.set({t:firebase.database.ServerValue.TIMESTAMP})}
+    });
+    list.on('value',s=>{el.textContent=Math.max(1,s.numChildren())});
+  }).catch(e=>console.warn('Live users load nahi hua',e));
+})();
+</script>
+</body></html>
